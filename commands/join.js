@@ -1,14 +1,15 @@
 const common = require('../common.js');
+const db = require('../db.js');
 
-function getJoinableLobbies(message, states){
-    let lobbies = common.getAllLobbies(message);
-
+function getJoinableLobbies(message, lobbies){
     var open = lobbies.filter(lobby => {
-        let channel = lobby.vChannel;
-        let index = parseInt(channel.name.slice('Lobby'.length).split(/ +/)[0]) - 1;
-        return (!channel.full && channel.members.size !== 0 && states[index] != '1');
+        let channel = message.guild.channels.resolve(lobby.voice);
+        return (!channel.full && channel.members.size !== 0 && !lobby.closed);
     });
-    var empty = lobbies.filter(lobby => lobby.vChannel.members.size === 0);
+    var empty = lobbies.filter(lobby => {
+        let channel = message.guild.channels.resolve(lobby.voice);
+        channel.members.size === 0
+    });
     
     return {open: open, empty: empty};
 }
@@ -20,7 +21,23 @@ module.exports = {
         var targetLobby = null;
         const member = message.member;
         
-        common.getLobbyStates(message, states => {
+        db.getLobbies(message.guild.id, (lobbies) => {
+            lobbies = lobbies.map(l => common.resolveLobby(message, l));
+            console.log(lobbies);
+            /*const sortedLobbies = getJoinableLobbies(message, lobbies);
+            console.log(sortedLobbies);
+            if(lobbies.open.length < 1){
+                targetLobby = lobbies.empty[0]; // if none available to join, join empty
+            }
+            else{
+                targetLobby = lobbies.open[Math.floor(Math.random() * lobbies.open.length)]; // if lobbies available to join, join random
+            }
+            console.log(targetLobby);*/
+            //common.addUserToLobby(targetLobby, member, true);
+        })
+
+
+        /*common.getLobbyStates(message, states => {
             const lobbies = getJoinableLobbies(message, states);
             console.log(lobbies);
 
@@ -31,6 +48,6 @@ module.exports = {
                 targetLobby = lobbies.open[Math.floor(Math.random() * lobbies.open.length)]; // if lobbies available to join, join random
             }
             common.addUserToLobby(targetLobby, member, true);
-        });
+        });*/
     }
 }

@@ -23,7 +23,6 @@ client.login(config.token);
 
 client.on('message', message => {
     if(!message.content.startsWith(config.prefix) || message.author.bot) return;
-    message.author.username
     const args = message.content.slice(config.prefix.length).trim().split(/ +/);
     const commandName = args.shift().toLowerCase();
 

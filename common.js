@@ -1,3 +1,4 @@
+const db = require("./db");
 
 module.exports = {
 
@@ -47,6 +48,24 @@ module.exports = {
         });
      },
 
+    resolveLobby(message, lobbyData){
+        let promises = [];
+        promises.push(message.guild.roles.fetch(String(lobbyData.role)));
+        promises.push(message.guild.channels.cache.find(c => c.id === String(lobbyData.text)));
+        promises.push(message.guild.channels.cache.find(c => c.id ===String(lobbyData.voice)));
+        return Promise.all(promises).then(vals => {
+            let resp = {
+                name: lobbyData.name, 
+                server_id: lobbyData.server_id, 
+                closed: lobbyData.closed
+            };
+            resp.role = vals[0];
+            resp.text = vals[1];
+            resp.voice = vals[2];
+            return resp;
+        });
+    },
+
     addUserToLobby(lobby, member, moveToVoice){
         member.roles.add(lobby.role);
         lobby.tChannel.send(`${member} has joined the lobby!`);
@@ -61,10 +80,5 @@ module.exports = {
             member.voice.setChannel(null).catch(err => console.log('Could not move user to voice channel'));
         }
     },
-
-    getAllLobbies(message){
-        let vChannels = this.getVoiceChannels(message);
-        return this.mapVoiceToLobby(message, vChannels);
-    }
 
 }

@@ -1,7 +1,11 @@
 var mysql = require('mysql');
 const config = require('./config.json');
 
-var connection = mysql.createConnection(config.dbInfo);
+var connection = mysql.createConnection({
+    ...config.dbInfo,
+    supportBigNumbers: true,
+    bigNumberStrings: true
+});
 
 connection.connect(function(err){
     if(err) throw err;
@@ -27,7 +31,7 @@ module.exports = {
         connection.query(q, function(err, data){
             console.log(data);
             if(err) return null;
-            else return data;
+            else return JSON.parse(JSON.stringify(data));
         });
     },
     joinedNew(guild){
@@ -68,7 +72,12 @@ module.exports = {
             else return 0;
         });
     },
-    getLobbies(guildid){
-        var q = `SELECT * FROM lobby WHERE `
+    getLobbies(guildid, callback){
+        var q = `SELECT * FROM lobby WHERE server_id = ${guildid}`;
+        connection.query(q, function(err, data){
+            console.log(data);
+            if(err) callback(null);
+            else callback(JSON.parse(JSON.stringify(data)));
+        });
     },
 }
