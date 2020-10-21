@@ -75,7 +75,6 @@ module.exports = {
     getLobbies(guildid, callback){
         var q = `SELECT * FROM lobby WHERE server_id = ${guildid}`;
         connection.query(q, function(err, data){
-            console.log(data);
             if(err) callback(null);
             else callback(JSON.parse(JSON.stringify(data)));
         });

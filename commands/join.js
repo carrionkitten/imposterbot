@@ -1,15 +1,10 @@
 const common = require('../common.js');
 const db = require('../db.js');
 
-function getJoinableLobbies(message, lobbies){
-    var open = lobbies.filter(lobby => {
-        let channel = message.guild.channels.resolve(lobby.voice);
-        return (!channel.full && channel.members.size !== 0 && !lobby.closed);
-    });
-    var empty = lobbies.filter(lobby => {
-        let channel = message.guild.channels.resolve(lobby.voice);
-        channel.members.size === 0
-    });
+function getJoinableLobbies(lobbies){
+    console.log(lobbies);
+    var open = lobbies.filter(lobby => !lobby.voice.full && lobby.voice.members.size !== 0 && !lobby.closed);
+    var empty = lobbies.filter(lobby => lobby.voice.members.size === 0);
     
     return {open: open, empty: empty};
 }
@@ -23,17 +18,16 @@ module.exports = {
         
         db.getLobbies(message.guild.id, (lobbies) => {
             lobbies = lobbies.map(l => common.resolveLobby(message, l));
-            console.log(lobbies);
-            /*const sortedLobbies = getJoinableLobbies(message, lobbies);
+            const sortedLobbies = getJoinableLobbies(lobbies);
             console.log(sortedLobbies);
-            if(lobbies.open.length < 1){
-                targetLobby = lobbies.empty[0]; // if none available to join, join empty
+            if(sortedLobbies.open.length < 1){
+                targetLobby = sortedLobbies.empty[0]; // if none available to join, join empty
             }
             else{
-                targetLobby = lobbies.open[Math.floor(Math.random() * lobbies.open.length)]; // if lobbies available to join, join random
+                targetLobby = sortedLobbies.open[Math.floor(Math.random() * sortedLobbies.open.length)]; // if lobbies available to join, join random
             }
-            console.log(targetLobby);*/
-            //common.addUserToLobby(targetLobby, member, true);
+            console.log(targetLobby);
+            common.addUserToLobby(targetLobby, member, true);
         })
 
 

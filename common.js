@@ -49,28 +49,22 @@ module.exports = {
      },
 
     resolveLobby(message, lobbyData){
-        let promises = [];
-        promises.push(message.guild.roles.fetch(String(lobbyData.role)));
-        promises.push(message.guild.channels.cache.find(c => c.id === String(lobbyData.text)));
-        promises.push(message.guild.channels.cache.find(c => c.id ===String(lobbyData.voice)));
-        return Promise.all(promises).then(vals => {
-            let resp = {
-                name: lobbyData.name, 
-                server_id: lobbyData.server_id, 
-                closed: lobbyData.closed
-            };
-            resp.role = vals[0];
-            resp.text = vals[1];
-            resp.voice = vals[2];
-            return resp;
-        });
+        let resp = {
+            name: lobbyData.name, 
+            server_id: lobbyData.server_id, 
+            closed: lobbyData.closed
+        };
+        resp.role = message.guild.roles.resolve(lobbyData.role);
+        resp.text = message.guild.channels.resolve(lobbyData.text);
+        resp.voice = message.guild.channels.resolve(lobbyData.voice);
+        return resp;
     },
 
     addUserToLobby(lobby, member, moveToVoice){
-        member.roles.add(lobby.role);
-        lobby.tChannel.send(`${member} has joined the lobby!`);
+        member.roles.add(lobby.role.id).catch(err => {console.log(err); throw err});
+        lobby.text.send(`${member} has joined the lobby!`);
         if(moveToVoice){
-            member.voice.setChannel(lobby.vChannel.id).catch(err => console.log('Could not move user to voice channel'));
+            member.voice.setChannel(lobby.voice.id).catch(err => console.log('Could not move user to voice channel'));
         }
     },
 
