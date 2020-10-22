@@ -21,8 +21,6 @@ client.once('ready', () => {
 
 client.login(config.token);
 
-console.log(client.guilds);
-
 client.on('message', message => {
     if(!message.content.startsWith(config.prefix) || message.author.bot) return;
     const args = message.content.slice(config.prefix.length).trim().split(/ +/);

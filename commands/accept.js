@@ -20,9 +20,14 @@ module.exports = {
                 message.channel.send("That invite code is invalid or has expired.");
                 return;
             }
-            let guild = client.guilds.resolve(invite.lobby_server);
-            console.log(invite, guild);
-            //common.addUserToLobby()
+            const guild = client.guilds.resolve(invite.lobby_server);
+            const lobby = common.resolveLobby({guild: guild}, invite);
+            const member = guild.members.resolve(invite.to_id);
+
+            common.addUserToLobby(lobby, member, true)
+            lobby.voice.createInvite({maxAge: 60*30, maxUses: 1}).then(invite => {                
+                message.channel.send(`You've been added to the lobby! Use this link to join the voice channel: ${invite.url}`)
+            })
         })
     }
 }

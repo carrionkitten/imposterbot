@@ -31,9 +31,8 @@ module.exports = {
         });
     },
     fetchInvite(code, callback){
-        var q = `SELECT * FROM invite WHERE code = "${code}"`;
+        var q = `SELECT * FROM invite, lobby WHERE code = "${code}" AND role = lobby_role`;
         connection.query(q, function(err, data){
-            console.log(data);
             if(err || data.length < 1) callback(null);
             else callback(JSON.parse(JSON.stringify(data[0])));
         });

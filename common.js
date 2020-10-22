@@ -61,6 +61,10 @@ module.exports = {
     },
 
     addUserToLobby(lobby, member, moveToVoice){
+        const existing = member.roles.cache.find(r => r.name.startsWith('Lobby'));
+        if(existing){
+            member.roles.remove(existing);
+        }
         member.roles.add(lobby.role.id).catch(err => {console.log(err); throw err});
         lobby.text.send(`${member} has joined the lobby!`);
         if(moveToVoice){
@@ -77,7 +81,7 @@ module.exports = {
 
     getInviteCode(){
         var dt = new Date()
-        return (dt % (60000 * 30)).toString(32).toUpperCase();
+        return ((dt % (60000 * 30)) + (60000 * 30)).toString(32).toUpperCase();
     }
 
 }
