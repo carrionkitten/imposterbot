@@ -15,9 +15,13 @@ connection.connect(function(err){
 });
 
 module.exports = {
-    createInvite(message_id, from, role, server){
-        var q = `INSERT INTO invite (message_id, from_id, lobby_role, lobby_server) 
-                VALUES (${message_id}, ${from}, ${role}, ${server})`;
+    createInvite(code, from, to, role, server){
+        const now = new Date().toISOString().slice(0,19).replace('T', ' ');
+        var q = `INSERT INTO invite (code, from_id, to_id, lobby_role, lobby_server, timestamp) 
+                VALUES ("${code}", ${from}, ${to}, ${role}, ${server}, "${now}")
+                ON DUPLICATE KEY UPDATE
+                from_id = ${from}, to_id = ${to}, lobby_role = ${role}, 
+                lobby_server = ${server}, timestamp = "${now}"`;
         connection.query(q, function(err, data){
             if(err){
                 console.log(err);
@@ -26,12 +30,12 @@ module.exports = {
             else return 0;
         });
     },
-    fetchInvite(message_id){
-        var q = `SELECT * FROM invite WHERE message_id = ${message_id}`;
+    fetchInvite(code, callback){
+        var q = `SELECT * FROM invite WHERE code = "${code}"`;
         connection.query(q, function(err, data){
             console.log(data);
-            if(err) return null;
-            else return JSON.parse(JSON.stringify(data));
+            if(err || data.length < 1) callback(null);
+            else callback(JSON.parse(JSON.stringify(data[0])));
         });
     },
     joinedNew(guild){

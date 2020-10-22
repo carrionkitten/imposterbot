@@ -75,4 +75,9 @@ module.exports = {
         }
     },
 
+    getInviteCode(){
+        var dt = new Date()
+        return (dt % (60000 * 30)).toString(32).toUpperCase();
+    }
+
 }

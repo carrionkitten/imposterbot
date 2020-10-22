@@ -21,6 +21,8 @@ client.once('ready', () => {
 
 client.login(config.token);
 
+console.log(client.guilds);
+
 client.on('message', message => {
     if(!message.content.startsWith(config.prefix) || message.author.bot) return;
     const args = message.content.slice(config.prefix.length).trim().split(/ +/);
@@ -30,6 +32,7 @@ client.on('message', message => {
     const command = client.commands.get(commandName);
     
     try{
+        if(commandName === 'accept') args.push(client);
         command.execute(message, args);
     } catch(error){
         console.error(error);
@@ -61,7 +64,7 @@ client.on('guildCreate', guild => { //-> event triggered when the bot joins a ne
       unless there is no other choice (all lobbies either full or empty)
     - !leave -> remove role for lobby (will make the user unable to see the lobby's channels anymore)
     - !join-empty -> add user to empty lobby & set it to private
-    - !invite @user -> add user to lobby the caller is currently in
+    - !invite @user -> send pm inviting the mentioned user to the caller's current lobby
     - !setup-lobbies <numLobbies> -> set up bot with numLobbies lobbies (voice channels, text channels, and roles); also creates Lobby category if it doesn't exist already
     - !open -> sets lobby the caller is currently in to open/public (joinable by randos via !join)
     - !close -> sets lobby the caller is currently in to closed/private (not joinable by randos via !join)
