@@ -84,7 +84,7 @@ module.exports = {
     },
     newInvite(invite){
         const inviter = invite.inviter ? invite.inviter.id : 'NULL';
-        const expires = invite.expiresAt ? invite.expiresAt : new Date(invite.expiresAt).toISOString().slice(0,19).replace('T', ' ');
+        const expires = invite.expiresAt ? new Date(invite.expiresAt).toISOString().slice(0,19).replace('T', ' ') : 'NULL';
         var q = `INSERT INTO server_invite (code, server_id, created_by, uses, expires) 
                 VALUES ('${invite.code}', ${invite.channel.guild.id}, ${inviter}, 0, '${expires}')`;
         console.log(invite);
@@ -106,26 +106,30 @@ module.exports = {
         var q = 0;
         const invs = invites.map( invite => {
             const inviter = invite.inviter ? invite.inviter.id : 'NULL';
-            const expires = invite.expiresAt ? invite.expiresAt : new Date(invite.expiresAt).toISOString().slice(0,19).replace('T', ' ');
+            const expires = invite.expiresAt ? new Date(invite.expiresAt).toISOString().slice(0,19).replace('T', ' ') : 'NULL';
             return `('${invite.code}', ${invite.channel.guild.id}, ${inviter}, ${invite.uses}, '${expires}')`;
         });
         var q = `INSERT INTO server_invite (code, server_id, created_by, uses, expires) 
                 VALUES ${invs}
                 ON DUPLICATE KEY UPDATE
                 uses = VALUES(uses)`
-        var q1 = `INSERT INTO invited_by 
-                (user_id, inviter_id, server_id)
-                VALUES
-                (${newUse.user}, ${newUse.inviter}, ${newUse.server})`;
         connection.query(q, function(err, data){
             if(err){
                 console.log(err);
             }
-            connection.query(q1, function(err, data){
-                if(err){
-                    console.log(err);
-                }
-            })
+            if(newUse){
+                var q1 = `INSERT INTO invited_by 
+                (user_id, inviter_id, server_id)
+                VALUES
+                (${newUse.user}, ${newUse.inviter}, ${newUse.server})
+                ON DUPLICATE KEY UPDATE
+                inviter_id = VALUES(inviter_id)`;
+                connection.query(q1, function(err, data){
+                    if(err){
+                        console.log(err);
+                    }
+                });
+            }
         });
     }
 }

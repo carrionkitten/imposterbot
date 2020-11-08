@@ -27,7 +27,7 @@ module.exports = {
                     member.send(`${message.author.username} is inviting you to join ${role.name} in ${message.guild}! Respond with "!accept ${code}" to accept.`)
                     .then(m => {
                         console.log(code, m);
-                        db.createInvite(code, message.author.id, member.user.id, role.id, message.guild.id)
+                        db.createInvite(code, message.author.id, member.id, role.id, message.guild.id)
                     });
                 }else if (message.mentions.members.size == 1){
                     message.reply(`they're already in the lobby!`);

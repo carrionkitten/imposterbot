@@ -44,11 +44,25 @@ client.on('inviteCreate', (invite) => {
 })
 
 client.on('guildMemberAdd', member => {
+    console.log(member);
     db.getInvites(member.guild.id, (dbinvites) => {
         member.guild.fetchInvites().then(invites => {
-            var increased = dbinvites.filter(i => {
-                
+            const invitePairs = dbinvites.map(dbinv => {
+                const dc = invites.get(dbinv.code);
+                return {db: dbinv, discord: dc};
             })
+            var newUse = null;
+            var target = invitePairs.find(inv => 
+                inv.discord && inv.discord.uses > inv.db.uses
+                );
+            if(target){
+                newUse = {
+                    user: member.id, 
+                    inviter: target.discord.inviter.id,
+                    server: member.guild.id
+                };
+            }
+            db.inviteUse(invites, newUse);
         });
     });
 })
