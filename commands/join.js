@@ -19,14 +19,12 @@ module.exports = {
         db.getLobbies(message.guild.id, (lobbies) => {
             lobbies = lobbies.map(l => common.resolveLobby(message, l));
             const sortedLobbies = getJoinableLobbies(lobbies);
-            console.log(sortedLobbies);
             if(sortedLobbies.open.length < 1){
                 targetLobby = sortedLobbies.empty[0]; // if none available to join, join empty
             }
             else{
                 targetLobby = sortedLobbies.open[Math.floor(Math.random() * sortedLobbies.open.length)]; // if lobbies available to join, join random
             }
-            console.log(targetLobby);
             common.addUserToLobby(targetLobby, member, true);
         })
 

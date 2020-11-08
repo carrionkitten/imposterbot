@@ -82,4 +82,50 @@ module.exports = {
             else callback(JSON.parse(JSON.stringify(data)));
         });
     },
+    newInvite(invite){
+        const inviter = invite.inviter ? invite.inviter.id : 'NULL';
+        const expires = invite.expiresAt ? invite.expiresAt : new Date(invite.expiresAt).toISOString().slice(0,19).replace('T', ' ');
+        var q = `INSERT INTO server_invite (code, server_id, created_by, uses, expires) 
+                VALUES ('${invite.code}', ${invite.channel.guild.id}, ${inviter}, 0, '${expires}')`;
+        console.log(invite);
+        
+        connection.query(q, function(err, data){
+            if(err){
+                console.log(err);
+            }
+        });
+    },
+    getInvites(guildid, callback){
+        var q = `SELECT * FROM server_invite WHERE server_id = ${guildid}`;
+        connection.query(q, function(err, data){
+            if(err) callback(null);
+            else callback(JSON.parse(JSON.stringify(data)));
+        });
+    },
+    inviteUse(invites, newUse){
+        var q = 0;
+        const invs = invites.map( invite => {
+            const inviter = invite.inviter ? invite.inviter.id : 'NULL';
+            const expires = invite.expiresAt ? invite.expiresAt : new Date(invite.expiresAt).toISOString().slice(0,19).replace('T', ' ');
+            return `('${invite.code}', ${invite.channel.guild.id}, ${inviter}, ${invite.uses}, '${expires}')`;
+        });
+        var q = `INSERT INTO server_invite (code, server_id, created_by, uses, expires) 
+                VALUES ${invs}
+                ON DUPLICATE KEY UPDATE
+                uses = VALUES(uses)`
+        var q1 = `INSERT INTO invited_by 
+                (user_id, inviter_id, server_id)
+                VALUES
+                (${newUse.user}, ${newUse.inviter}, ${newUse.server})`;
+        connection.query(q, function(err, data){
+            if(err){
+                console.log(err);
+            }
+            connection.query(q1, function(err, data){
+                if(err){
+                    console.log(err);
+                }
+            })
+        });
+    }
 }

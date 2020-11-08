@@ -23,6 +23,7 @@ client.login(config.token);
 
 client.on('message', message => {
     if(!message.content.startsWith(config.prefix) || message.author.bot) return;
+
     const args = message.content.slice(config.prefix.length).trim().split(/ +/);
     const commandName = args.shift().toLowerCase();
 
@@ -38,18 +39,38 @@ client.on('message', message => {
     }
 })
 
+client.on('inviteCreate', (invite) => {
+    db.newInvite(invite);
+})
+
+client.on('guildMemberAdd', member => {
+    db.getInvites(member.guild.id, (dbinvites) => {
+        member.guild.fetchInvites().then(invites => {
+            var increased = dbinvites.filter(i => {
+                
+            })
+        });
+    });
+})
+
+client.on('rateLimit', (rateLimitInfo) =>{
+    console.log(rateLimitInfo);
+})
+
 /*client.on('voiceStateUpdate', (oldState, newState) => {
     // if lobby becomes empty, update to open
-    if(oldState.channel && oldState.channel.name.startsWith('Lobby') && newState.channel.id !== oldState.channel.id){
-        if(oldState.channel.members.size === 0){
-            let index = parseInt(oldState.channel.name.slice('Lobby'.length))
-            var mockMessage = {
-                guild = oldState.channel.guild
-            };
-            common.updateLobbyState(mockMessage, index, );
+    db.getLobbies(oldState.guild.id, lobbies => {
+        if(!oldState.channel)
+            return;
+        const lobby = lobbies.filter(l => l.voice === String(oldState.channel.id))
+        if( oldState.channel && newState.channel.id !== oldState.channel.id){
+            if(oldState.channel.members.size === 0){
+                
+                if(lobby.closed) db.updateLobbyState(lobby.role, false);
+            }
+            
         }
-        
-    }
+    })
 })*/
 
 client.on('guildCreate', guild => { //-> event triggered when the bot joins a new server; useful for future applications w/managing multiple servers for more robust experience
@@ -71,6 +92,4 @@ client.on('guildCreate', guild => { //-> event triggered when the bot joins a ne
     - event listeners for automatically opening lobbies when they become empty, removing roles when a user goes inactive, etc.
     PLANNED FIXES:
     - !setup-lobbies -> alter to update lobby state (initialize new lobbies to open) and check permissions before executing command
-    - !invite -> check to see if target user is already in lobby before executing
-    - !join -> remove any currently applied lobby roles
 */
