@@ -10,24 +10,6 @@ module.exports = {
     replaceAt(s, index, replacement) {
         return String(s.substr(0, index)) + String(replacement) + String(s.substr(index + replacement.length));
     },
-    
-    getLobbyStates(message, callback){
-        const log = message.guild.channels.cache.find(c => c.name === 'imposterbot-lobby-logs');
-    
-        log.messages.fetch({ limit: 1 }).then(messages => {
-            let lastMessage = messages.first();
-            if(lastMessage != null){
-                callback(lastMessage.content)
-            }
-            else{ // get list of voice channels
-                let vChannels = this.getVoiceChannels(message);
-                log.send('0'.repeat(vChannels.size));
-                callback('0'.repeat(vChannels.size));
-            }
-        }).catch(err => console.log(err));
-    
-        return 0;
-    },
 
     mapVoiceToLobby(message, channelList){
         return channelList.map(channel => {

@@ -59,23 +59,6 @@ module.exports = {
         }
 
         const x = parseInt(args[0]);
-        const clientId = message.guild.member(message.client.user.id);
-
-        if(!message.guild.channels.cache.some(channel => channel.name === "imposterbot-lobby-logs")){ // create log channel where only bot can post
-            message.guild.channels.create("imposterbot-lobby-logs", {
-                type: 'text',
-                permissionOverwrites: [
-                {
-                    id: message.guild.id,
-                    deny: ['SEND_MESSAGES', 'VIEW_CHANNEL'],
-                },
-                {
-                    id: clientId,
-                    allow: ['SEND_MESSAGES', 'VIEW_CHANNEL']
-                }
-                ],
-            }).then(() => console.log(`${name} ${channelType} channel created`));
-        }
         
         let createdLobbies = [];
 
