@@ -14,9 +14,14 @@ connection.connect(function(err){
     }
 });
 
+function dateString(date){
+    // Function to convert JS Date() to MySQL DATETIME string
+    return date.toISOString().slice(0,19).replace('T', ' ')
+}
+
 module.exports = {
     createInvite(code, from, to, role, server){
-        const now = new Date().toISOString().slice(0,19).replace('T', ' ');
+        const now = dateString(new Date());
         var q = `INSERT INTO invite (code, from_id, to_id, lobby_role, lobby_server, timestamp) 
                 VALUES ("${code}", ${from}, ${to}, ${role}, ${server}, "${now}")
                 ON DUPLICATE KEY UPDATE
@@ -39,7 +44,7 @@ module.exports = {
     },
     joinedNew(guild){
         var q = `INSERT INTO server (id, botJoined)
-                VALUES (${guild}, "${new Date().toISOString().slice(0,19).replace('T', ' ')}")`;
+                VALUES (${guild}, "${dateString(new Date())}")`;
         connection.query(q, function(err, data){
             if(err){
                 console.log(err);
@@ -84,7 +89,7 @@ module.exports = {
     },
     newInvite(invite){
         const inviter = invite.inviter ? invite.inviter.id : 'NULL';
-        const expires = invite.expiresAt ? new Date(invite.expiresAt).toISOString().slice(0,19).replace('T', ' ') : 'NULL';
+        const expires = invite.expiresAt ? dateString(new Date(invite.expiresAt)) : 'NULL';
         var q = `INSERT INTO server_invite (code, server_id, created_by, uses, expires) 
                 VALUES ('${invite.code}', ${invite.channel.guild.id}, ${inviter}, 0, '${expires}')`;
         console.log(invite);
@@ -106,7 +111,7 @@ module.exports = {
         var q = 0;
         const invs = invites.map( invite => {
             const inviter = invite.inviter ? invite.inviter.id : 'NULL';
-            const expires = invite.expiresAt ? new Date(invite.expiresAt).toISOString().slice(0,19).replace('T', ' ') : 'NULL';
+            const expires = invite.expiresAt ? dateString(new Date(invite.expiresAt)) : 'NULL';
             return `('${invite.code}', ${invite.channel.guild.id}, ${inviter}, ${invite.uses}, '${expires}')`;
         });
         var q = `INSERT INTO server_invite (code, server_id, created_by, uses, expires) 
@@ -130,6 +135,41 @@ module.exports = {
                     }
                 });
             }
+        });
+    },
+    fetchActiveStrikeCounts(server_id, users, callback){
+        const uids = '(' + users.map(u => u.id).join(', ') + ')';
+        var q = `SELECT user_id, COUNT(*) as \`count\` FROM strike WHERE 
+        (user_id in ${uids} and server_id = ${server_id}) and 
+        (\`timestamp\` >= DATE_SUB(NOW(), INTERVAL 14 DAY) or perma = 1)
+        GROUP BY user_id;`
+        connection.query(q, function(err, data){
+            if(err) callback(err, null);
+            else callback(null, JSON.parse(JSON.stringify(data)));
+        });
+    },
+    logStrike(server_id, users, mod_id, perma, desc, callback){
+        const vals = users.map( user => `(${server_id}, ${user.id}, ${mod_id}, ${+ perma}, '${desc}', '${dateString(new Date())}')`).join(', ');
+        var q = `INSERT INTO \`strike\` (server_id, user_id, mod_id, perma, \`desc\`, \`timestamp\`)
+                VALUES ${vals}`;
+        connection.query(q, function(err, data){
+            if(err){
+                console.log(err);
+                callback(err, null);
+            }else{
+                module.exports.fetchActiveStrikeCounts(server_id, users, function(err2, data2){
+                    callback(err2, data2);
+                });
+            }
+        });
+    },
+    fetchActiveStrikes(server_id, user_id, callback){
+        var q = `SELECT * FROM strike WHERE 
+        (user_id = ${user_id} and server_id = ${server_id}) and 
+        (\`timestamp\` >= DATE_SUB(NOW(), INTERVAL 14 DAY) or perma = 1)`
+        connection.query(q, function(err, data){
+            if(err) callback(null);
+            else callback(JSON.parse(JSON.stringify(data)));
         });
     }
 }
