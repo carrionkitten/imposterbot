@@ -163,13 +163,18 @@ module.exports = {
             }
         });
     },
-    fetchActiveStrikes(server_id, user_id, callback){
+    fetchStrikes(server_id, user_id, activeOnly, callback){
         var q = `SELECT * FROM strike WHERE 
-        (user_id = ${user_id} and server_id = ${server_id}) and 
-        (\`timestamp\` >= DATE_SUB(NOW(), INTERVAL 14 DAY) or perma = 1)`
+        (user_id = ${user_id} and server_id = ${server_id})`
+        if(activeOnly){
+            q = q + ` and (\`timestamp\` >= DATE_SUB(NOW(), INTERVAL 14 DAY) or perma = 1) ORDER BY timestamp`;
+        }
         connection.query(q, function(err, data){
-            if(err) callback(null);
-            else callback(JSON.parse(JSON.stringify(data)));
+            if(err) callback(err, null);
+            else callback(null, JSON.parse(JSON.stringify(data)));
         });
+    },
+    fetchStrikeCounts(server_id, userList, callback){
+        
     }
 }
