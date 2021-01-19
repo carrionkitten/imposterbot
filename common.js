@@ -2,6 +2,23 @@ const db = require("./db");
 
 module.exports = {
 
+    formatList(list){
+        if(list < 1) return '';
+        var i;
+        var response = list[0];
+        for(i = 1; i < list.length; i++){
+            if(i < (list.length - 1)){
+                response += (', ' + list[i]);
+            } else {
+                if(list.length > 2){
+                    response += ',';
+                }
+                response += (' and ' + list[i]);
+            }
+        }
+        return response;
+    },
+
     getVoiceChannels(message){
         const category = message.guild.channels.cache.find(c => c.type === 'category' && c.name === 'Lobby')
         return category.children.filter(channel => channel.type === 'voice');

@@ -14,7 +14,9 @@
     "discord.js": "^12.4.1",
     "ffmpeg-static": "^3.0.0",
     "mysql": "^2.18.1",
+    "node-gyp": "^7.1.2",
     "node-opus": "^0.3.3",
+    "node-sass": "^5.0.0",
     "opusscript": "0.0.7",
     "redis": "^3.0.2",
     "utf-8-validate": "^5.0.2"
