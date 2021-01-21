@@ -8,7 +8,10 @@ var connection = mysql.createConnection({
 });
 
 connection.connect(function(err){
-    if(err) throw err;
+    if(err) {
+        console.log(err);
+        throw err;
+    }
     else{
         console.log('Connected to DB :)');
     }
@@ -174,7 +177,11 @@ module.exports = {
             else callback(null, JSON.parse(JSON.stringify(data)));
         });
     },
-    fetchStrikeCounts(server_id, userList, callback){
-        
+    fetchInviter(server_id, user_id, callback){
+        const q = `SELECT * FROM mydb.invited_by WHERE user_id =${user_id} AND server_id = ${server_id}`;
+        connection.query(q, function(err, data){
+            if(err) callback(err, null);
+            else callback(null, JSON.parse(JSON.stringify(data)));
+        })
     }
 }
